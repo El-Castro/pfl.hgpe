@@ -1,4 +1,4 @@
---import qualified Data.List
+import qualified Data.List
 --import qualified Data.Array
 --import qualified Data.Bits
 
@@ -12,8 +12,13 @@ type Distance = Int
 
 type RoadMap = [(City,City,Distance)]
 
+removeDups :: [City] -> [City]
+removeDups [] = []
+removeDups (x:xs) = x : removeDups (filter (/= x) xs)
+
 cities :: RoadMap -> [City]
-cities = undefined -- modifiy this line to implement the solution, for each exercise not solved, leave the function definition like this
+cities [] = []
+cities ((city1,city2,distance):xs) = removeDups(city1 : city2 : cities xs)
 
 areAdjacent :: RoadMap -> City -> City -> Bool
 areAdjacent = undefined
