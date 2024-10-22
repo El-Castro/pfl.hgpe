@@ -21,7 +21,10 @@ cities [] = []
 cities ((city1,city2,distance):xs) = removeDups(city1 : city2 : cities xs)
 
 areAdjacent :: RoadMap -> City -> City -> Bool
-areAdjacent = undefined
+areAdjacent [] _ _ = False;
+areAdjacent ((city1,city2,distance):xs) x y
+  | city1 == x && city2 == y = True
+  | otherwise = areAdjacent xs x y
 
 distance :: RoadMap -> City -> City -> Maybe Distance
 distance = undefined
@@ -56,3 +59,4 @@ gTest2 = [("0","1",10),("0","2",15),("0","3",20),("1","2",35),("1","3",25),("2",
 
 gTest3 :: RoadMap -- unconnected graph
 gTest3 = [("0","1",4),("2","3",2)]
+
