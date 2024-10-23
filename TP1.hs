@@ -52,7 +52,12 @@ adjacent ((city1, city2, d):xs) x
 -- pathDistance
 
 pathDistance :: RoadMap -> Path -> Maybe Distance
-pathDistance = undefined
+pathDistance _ [] = Just 0
+pathDistance _ [_] = Just 0
+pathDistance roadmap (y1:y2:ys) = do
+    a <- distance roadmap y1 y2
+    b <- pathDistance roadmap (y2:ys)
+    return (a + b)
 
 -- rome
 
