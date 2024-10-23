@@ -12,6 +12,8 @@ type Distance = Int
 
 type RoadMap = [(City,City,Distance)]
 
+-- cities
+
 removeDups :: [City] -> [City]
 removeDups [] = []
 removeDups (x:xs) = x : removeDups (filter (/= x) xs)
@@ -20,32 +22,59 @@ cities :: RoadMap -> [City]
 cities [] = []
 cities ((city1,city2,distance):xs) = removeDups(city1 : city2 : cities xs)
 
+-- areAdjacent
+
 areAdjacent :: RoadMap -> City -> City -> Bool
 areAdjacent [] _ _ = False;
 areAdjacent ((city1,city2,distance):xs) x y
   | city1 == x && city2 == y = True
+  | city1 == y && city2 == x = True
   | otherwise = areAdjacent xs x y
 
+-- distance
+
 distance :: RoadMap -> City -> City -> Maybe Distance
-distance = undefined
+distance [] _ _ = Nothing
+distance ((city1, city2, d):xs) x y
+    | city1 == x && city2 == y = Just d
+    | city1 == y && city2 == x = Just d
+    | otherwise = distance xs x y
+
+-- adjacent
 
 adjacent :: RoadMap -> City -> [(City,Distance)]
-adjacent = undefined
+adjacent [] _ = []
+adjacent ((city1, city2, d):xs) x
+    | city1 == x = (city2, d) : adjacent xs x
+    | city2 == x = (city1, d) : adjacent xs x
+    | otherwise = adjacent xs x
+
+-- pathDistance
 
 pathDistance :: RoadMap -> Path -> Maybe Distance
 pathDistance = undefined
 
+-- rome
+
 rome :: RoadMap -> [City]
 rome = undefined
+
+-- isStronglyConnected
 
 isStronglyConnected :: RoadMap -> Bool
 isStronglyConnected = undefined
 
+-- shortestPath
+
 shortestPath :: RoadMap -> City -> City -> [Path]
 shortestPath = undefined
 
+-- travelSales
+
 travelSales :: RoadMap -> Path
 travelSales = undefined
+
+-- tspBruteForce
 
 tspBruteForce :: RoadMap -> Path
 tspBruteForce = undefined -- only for groups of 3 people; groups of 2 people: do not edit this function
