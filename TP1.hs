@@ -1,6 +1,6 @@
 import qualified Data.List
---import qualified Data.Array
---import qualified Data.Bits
+import qualified Data.Array
+import qualified Data.Bits
 
 -- PFL 2024/2025 Practical assignment 1
 
@@ -61,8 +61,19 @@ pathDistance roadmap (y1:y2:ys) = do
 
 -- rome
 
+maxDegree :: RoadMap -> Int
+maxDegree [] = 0
+maxDegree ((city1, city2, d):xs) = do
+    a <- maxDegree xs
+    b <-  length (adjacent ((city1, city2, d):xs) city1)
+    c <- length (adjacent ((city1, city2, d):xs) city2)
+    maximum [a, b, c]
+
 rome :: RoadMap -> [City]
-rome = undefined
+rome ((city1, city2, d):xs)
+    | length (adjacent ((city1, city2, d):xs) city1) == maxDegree ((city1, city2, d):xs) = city1 : rome xs
+    | length (adjacent ((city1, city2, d):xs) city2) == maxDegree ((city1, city2, d):xs) = city2 : rome xs
+    | otherwise = rome xs
 
 -- isStronglyConnected
 
