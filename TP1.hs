@@ -64,16 +64,17 @@ pathDistance roadmap (y1:y2:ys) = do
 maxDegree :: RoadMap -> Int
 maxDegree [] = 0
 maxDegree ((city1, city2, d):xs) = do
-    a <- maxDegree xs
-    b <-  length (adjacent ((city1, city2, d):xs) city1)
-    c <- length (adjacent ((city1, city2, d):xs) city2)
+    let a = maxDegree xs
+    let b =  length (adjacent ((city1, city2, d):xs) city1)
+    let c = length (adjacent ((city1, city2, d):xs) city2)
     maximum [a, b, c]
 
 rome :: RoadMap -> [City]
+rome [] = []
 rome ((city1, city2, d):xs)
-    | length (adjacent ((city1, city2, d):xs) city1) == maxDegree ((city1, city2, d):xs) = city1 : rome xs
-    | length (adjacent ((city1, city2, d):xs) city2) == maxDegree ((city1, city2, d):xs) = city2 : rome xs
-    | otherwise = rome xs
+    | length (adjacent ((city1, city2, d):xs) city1) == maxDegree ((city1, city2, d):xs) = removeDups(city1 : rome xs)
+    | length (adjacent ((city1, city2, d):xs) city2) == maxDegree ((city1, city2, d):xs) = removeDups(city2 : rome xs)
+    | otherwise = removeDups (rome xs)
 
 -- isStronglyConnected
 
