@@ -77,9 +77,20 @@ rome ((city1, city2, d):xs)
     | otherwise = removeDups (rome xs)
 
 -- isStronglyConnected
+    
+isStronglyConnectedCity :: RoadMap -> City -> [City] -> Bool
+isStronglyConnectedCity _  _ [] = True
+isStronglyConnectedCity _  _ [_] = True
+isStronglyConnectedCity roadmap x1 (x:xs)
+    | x1 == x = isStronglyConnectedCity roadmap x1 xs
+    | distance roadmap x1 x == Nothing = False --this doesnt work, needs fixing xD
+    | otherwise = isStronglyConnectedCity roadmap x1 xs
 
 isStronglyConnected :: RoadMap -> Bool
-isStronglyConnected = undefined
+isStronglyConnected [] = False
+isStronglyConnected roadmap =
+    let (c:cs) = cities roadmap
+    in all (\city -> isStronglyConnectedCity roadmap city (c:cs)) (c:cs) --check if all cities are strongly connected to all other cities
 
 -- shortestPath
 
