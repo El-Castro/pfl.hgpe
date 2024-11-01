@@ -77,25 +77,63 @@ rome ((city1, city2, d):xs)
     | otherwise = removeDups (rome xs)
 
 -- isStronglyConnected
-    
-isStronglyConnectedCity :: RoadMap -> City -> [City] -> Bool
-isStronglyConnectedCity _  _ [] = True
-isStronglyConnectedCity _  _ [_] = True
-isStronglyConnectedCity roadmap x1 (x:xs)
-    | x1 == x = isStronglyConnectedCity roadmap x1 xs
-    | distance roadmap x1 x == Nothing = False --this doesnt work, needs fixing xD
-    | otherwise = isStronglyConnectedCity roadmap x1 xs
+
+getNeighbors :: RoadMap -> City -> [City]
+getNeighbors [] _ = []
+getNeighbors ((city1, city2, d):xs) x
+    | city1 == x = city2 : getNeighbors xs x
+    | city2 == x = city1 : getNeighbors xs x
+    | otherwise = getNeighbors xs x
+
+reachable :: RoadMap -> City -> [City] -> [City]
+reachable roadmap city visited
+    | city `elem` visited = visited  -- If city has already been visited, return visited list
+    | otherwise =
+        let newVisited = city : visited  -- Mark the city as visited
+            neighbors = getNeighbors roadmap city  -- Get neighboring cities
+        in foldl (\acc neighbor -> reachable roadmap neighbor acc) newVisited neighbors
 
 isStronglyConnected :: RoadMap -> Bool
 isStronglyConnected [] = False
 isStronglyConnected roadmap =
-    let (c:cs) = cities roadmap
-    in all (\city -> isStronglyConnectedCity roadmap city (c:cs)) (c:cs) --check if all cities are strongly connected to all other cities
-
+    let (x:xs) = cities roadmap  -- Get list of all unique cities in the roadmap
+        startCity = x  -- Choose an arbitrary starting city
+        reachableFromStart = reachable roadmap startCity []  -- Find all cities reachable from startCity
+    in length reachableFromStart == length (x:xs)  -- If all cities are reachable from startCity, the graph is strongly connected
+    
 -- shortestPath
 
 shortestPath :: RoadMap -> City -> City -> [Path]
-shortestPath = undefined
+shortestPath roadmap start end
+    | start == end = [[start]]  -- Return the path containing just the start city
+    | otherwise = bfs [[start]]  -- Start BFS with the initial city
+
+    where
+        -- Perform BFS to find all paths
+        bfs :: [Path] -> [Path]
+        bfs [] = []  -- No paths left to explore
+        bfs paths = 
+            let extendedPaths = concatMap extend paths  -- Extend each path
+                allValidPaths = filter (\path -> last path == end) extendedPaths  -- Keep all paths that reach the end city
+                remainingPaths = filter (\path -> last path /= end) extendedPaths  -- Paths that haven't reached the end yet
+            in if null remainingPaths  -- If there are no more paths to explore, return all valid paths found
+            then shortestPaths (allValidPaths)  -- Return all paths that reach the end city
+            else shortestPaths (allValidPaths ++ bfs remainingPaths)  -- Continue searching and concatenate results
+
+
+        -- Extend the path by adding neighbors
+        extend :: Path -> [Path]
+        extend path = 
+            let currentCity = last path  -- Get the last city in the path
+                neighbors = getNeighbors roadmap currentCity  -- Get neighboring cities and distances
+            in [path ++ [n] | n <- neighbors, n `notElem` path]  -- Create new paths, avoiding cycles
+
+        -- Get the shortest paths from valid paths
+        shortestPaths :: [Path] -> [Path]
+        shortestPaths paths =
+            let distances = map (pathDistance roadmap) paths  -- Calculate distances for all valid paths
+                minDistance = minimum (map (maybe maxBound id) distances)  -- Find minimum distance (handling Maybe)
+            in filter (\p -> pathDistance roadmap p == Just minDistance) paths  -- Filter paths by minimum distance
 
 -- travelSales
 
@@ -116,4 +154,3 @@ gTest2 = [("0","1",10),("0","2",15),("0","3",20),("1","2",35),("1","3",25),("2",
 
 gTest3 :: RoadMap -- unconnected graph
 gTest3 = [("0","1",4),("2","3",2)]
-
