@@ -13,11 +13,65 @@ type Distance = Int
 type RoadMap = [(City,City,Distance)]
 
 
--- removeDups is a auxiliar function that removes duplicates from a list. 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- AUXILIARY FUNCTIONS -------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+-- removeDups is a auxiliary function that removes duplicates from a list. 
 -- It receives a list of cities and returns a list of cities without any duplicates.
+
 removeDups :: [City] -> [City]
 removeDups [] = []
 removeDups (x:xs) = x : removeDups (filter (/= x) xs)
+
+
+
+-- maxDegree is an auxiliary function that calculates the maximum degree out of all the cities of the roadmap.
+-- It receives a roadmap and returns the maximum degree between all cities in the roadmap.
+
+maxDegree :: RoadMap -> Int
+maxDegree [] = 0
+maxDegree ((city1, city2, d):xs) = do
+    let a = maxDegree xs
+    let b =  length (adjacent ((city1, city2, d):xs) city1)
+    let c = length (adjacent ((city1, city2, d):xs) city2)
+    maximum [a, b, c]
+
+
+
+-- getNeighbors is an auxiliary function that returns the neighbors of a city in a roadmap.
+-- It receives a roadmap and a city. Returns a list of all neighbors of the city.
+-- It's a similar function to adjacent, but it only returns the cities, not the distances.
+
+getNeighbors :: RoadMap -> City -> [City]
+getNeighbors [] _ = []
+getNeighbors ((city1, city2, d):xs) x
+    | city1 == x = city2 : getNeighbors xs x
+    | city2 == x = city1 : getNeighbors xs x
+    | otherwise = getNeighbors xs x
+
+
+
+-- reachable is an auxiliary function that returns all cities reachable from a given city in a roadmap.
+-- It receives a roadmap, a city and a list of visited cities (used in recursion). Returns a list of all cities reachable from the given city.
+
+reachable :: RoadMap -> City -> [City] -> [City]
+reachable roadmap city visited
+    | city `elem` visited = visited  -- If city has already been visited, return visited list
+    | otherwise =
+        let newVisited = city : visited  -- Mark the city as visited
+            neighbors = getNeighbors roadmap city  -- Get neighboring cities
+        in foldl (\acc neighbor -> reachable roadmap neighbor acc) newVisited neighbors
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- MAIN FUNCTIONS ------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 
 -- cities is a function that lists all the cities in a roadmap.
@@ -26,6 +80,8 @@ removeDups (x:xs) = x : removeDups (filter (/= x) xs)
 cities :: RoadMap -> [City]
 cities [] = []
 cities ((city1,city2,distance):xs) = removeDups(city1 : city2 : cities xs)
+
+
 
 -- areAdjacent is a function that checks if two cities are adjacent in a roadmap.
 -- It receives a roadmap and two cities. Returns True if the cities are adjacent and False otherwise.
@@ -37,6 +93,8 @@ areAdjacent ((city1,city2,distance):xs) x y
   | city1 == y && city2 == x = True
   | otherwise = areAdjacent xs x y
 
+
+
 -- distance is a function that returns the distance between two adjacent cities in a roadmap.
 -- It receives a roadmap and two cities. Returns the distance between the cities if they are adjacent and Nothing otherwise.
 
@@ -47,6 +105,8 @@ distance ((city1, city2, d):xs) x y
     | city1 == y && city2 == x = Just d
     | otherwise = distance xs x y
 
+
+
 -- adjacent is a function that lists all the cities adjacent to a given city in a roadmap.
 -- It receives a roadmap and a city. Returns a list of tuples with the adjacent cities and their respective distances.
 
@@ -56,6 +116,8 @@ adjacent ((city1, city2, d):xs) x
     | city1 == x = (city2, d) : adjacent xs x
     | city2 == x = (city1, d) : adjacent xs x
     | otherwise = adjacent xs x
+
+
 
 -- pathDistance is a function that calculates the distance of a path in a roadmap.
 -- It receives a roadmap and a path. Returns the distance of the path if it is a valid path and Nothing otherwise.
@@ -68,16 +130,7 @@ pathDistance roadmap (y1:y2:ys) = do
     b <- pathDistance roadmap (y2:ys)
     return (a + b)
 
--- maxDistance is an auxiliar function that calculates the maximum degree that any city in the roadmap has.
--- It receives a roadmap and returns the maximum degree between all cities in the roadmap.
 
-maxDegree :: RoadMap -> Int
-maxDegree [] = 0
-maxDegree ((city1, city2, d):xs) = do
-    let a = maxDegree xs
-    let b =  length (adjacent ((city1, city2, d):xs) city1)
-    let c = length (adjacent ((city1, city2, d):xs) city2)
-    maximum [a, b, c]
 
 -- rome is a function that returns the cities with the maximum degree in a roadmap.
 -- It receives a roadmap and returns a list of all cities with the highest degree.
@@ -89,27 +142,7 @@ rome ((city1, city2, d):xs)
     | length (adjacent ((city1, city2, d):xs) city2) == maxDegree ((city1, city2, d):xs) = removeDups(city2 : rome xs)
     | otherwise = removeDups (rome xs)
 
--- getNeighbors is an auxiliar function that returns the neighbors of a city in a roadmap.
--- It receives a roadmap and a city. Returns a list of all neighbors of the city.
--- It's a similar function to adjacent, but it only returns the cities, not the distances.
 
-getNeighbors :: RoadMap -> City -> [City]
-getNeighbors [] _ = []
-getNeighbors ((city1, city2, d):xs) x
-    | city1 == x = city2 : getNeighbors xs x
-    | city2 == x = city1 : getNeighbors xs x
-    | otherwise = getNeighbors xs x
-
--- reachable is an auxiliar function that returns all cities reachable from a given city in a roadmap.
--- It receives a roadmap, a city and a list of visited cities (used in recursion). Returns a list of all cities reachable from the given city.
-
-reachable :: RoadMap -> City -> [City] -> [City]
-reachable roadmap city visited
-    | city `elem` visited = visited  -- If city has already been visited, return visited list
-    | otherwise =
-        let newVisited = city : visited  -- Mark the city as visited
-            neighbors = getNeighbors roadmap city  -- Get neighboring cities
-        in foldl (\acc neighbor -> reachable roadmap neighbor acc) newVisited neighbors
 
 -- isStronglyConnected is a function that checks if a roadmap is strongly connected.
 -- It receives a roadmap and returns True if the roadmap is strongly connected and False otherwise.
@@ -121,8 +154,10 @@ isStronglyConnected roadmap =
         reachableFromStart = reachable roadmap x []  -- Find all cities reachable from x
     in length reachableFromStart == length (x:xs)  -- If both lists have the same length the graph is strongly connected
     
+
+
 -- shortestPath is a function that finds the shortest path between two cities in a roadmap.
--- It receives a roadmap, a start city and an end city. Returns a list of all shortest paths between the two cities.
+-- It receives a roadmap, a start city and an end city. Returns a list with all the shortest paths between the two cities.
 
 shortestPath :: RoadMap -> City -> City -> [Path]
 shortestPath roadmap start end
@@ -141,10 +176,8 @@ shortestPath roadmap start end
             then shortestPaths (allValidPaths)  -- ... return the shortest valid paths
             else shortestPaths (allValidPaths ++ bfs remainingPaths)  -- ... otherwise continue exploring on the remaining paths
 
-
         -- extend adds all neighbors to a path
         -- It receives a path and returns a list of all possible paths that can be extended from the given path
-
         extend :: Path -> [Path]
         extend path = 
             let currentCity = last path  -- Get the last city in the path
@@ -159,17 +192,65 @@ shortestPath roadmap start end
                 minDistance = minimum (map (maybe maxBound id) distances)  -- Calculate the minimum distance
             in filter (\p -> pathDistance roadmap p == Just minDistance) paths  -- Filter paths by minimum distance
 
--- travelSales
+
+
+-- travelSales is a function that finds a TSP path, travelling through all cities exactly once and returning to the start.
+-- It receives a roadmap and returns one of the TSP paths of that roadmap.
+-- If no TSP path exists, it returns an empty list.
 
 travelSales :: RoadMap -> Path
-travelSales = undefined
+travelSales roadmap
+    | not (isStronglyConnected roadmap) = []  -- If the graph is not strongly connected, return an empty list
+    | otherwise = 
+        let (x:_) = cities roadmap  -- Choose a starting city
+        in case bfs [[x]] of
+            [] -> []  -- If no TSP path was found, return an empty list
+            (y:ys) -> y  -- Return one of the shortest paths
 
--- tspBruteForce
+    where
+        -- bfs recursively explores all paths in the roadmap to find TSP paths
+        bfs :: [Path] -> [Path]
+        bfs [] = []  -- No paths left to explore
+        bfs paths = 
+            let extendedPaths = concatMap extend paths  -- Extend each path by adding all possible paths (unexplored neighbors)
+                completeCycles = filter isCompleteCycle extendedPaths  -- Filter paths that form a complete TSP cycle
+                incompletePaths = filter (not . isCompleteCycle) extendedPaths  -- Paths that haven't yet completed a cycle
+            in if null incompletePaths  -- If there are no more paths to extend, return the completed cycles
+               then shortestPaths completeCycles  -- Return the shortest valid cycles
+               else completeCycles ++ bfs incompletePaths  -- Continue exploring incomplete paths
+
+        -- Checks if a path forms a complete TSP cycle
+        isCompleteCycle :: Path -> Bool
+        isCompleteCycle (y:ys) =
+            length (y:ys) == length (cities roadmap) + 1 && y == last (y:ys)  -- Path visits all cities and returns to the start
+
+        -- Extend a path by adding unvisited neighbors
+        extend :: Path -> [Path]
+        extend (y:ys) = 
+            let currentCity = last (y:ys)  -- Get the last city in the path
+                neighbors = getNeighbors roadmap currentCity  -- Get neighboring cities
+            in [(y:ys) ++ [n] | n <- neighbors, n `notElem` (y:ys) || (n == y && length (y:ys) == length (cities roadmap))]  -- Create new paths, allowing only the start city to be revisited for cycle completion
+
+        -- Select the shortest paths among all complete paths
+        shortestPaths :: [Path] -> [Path]
+        shortestPaths paths =
+            let distances = map (pathDistance roadmap) paths  -- Calculate distances for all complete paths
+                minDistance = minimum (map (maybe maxBound id) distances)  -- Calculate the minimum distance
+            in filter (\p -> pathDistance roadmap p == Just minDistance) paths  -- Filter paths by minimum distance
+
+
 
 tspBruteForce :: RoadMap -> Path
 tspBruteForce = undefined -- only for groups of 3 people; groups of 2 people: do not edit this function
 
--- Some graphs to test your work
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- TEST CASES ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 gTest1 :: RoadMap
 gTest1 = [("7","6",1),("8","2",2),("6","5",2),("0","1",4),("2","5",4),("8","6",6),("2","3",7),("7","8",7),("0","7",8),("1","2",8),("3","4",9),("5","4",10),("1","7",11),("3","5",14)]
 
