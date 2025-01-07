@@ -17,8 +17,8 @@ Here, we decided to use a breadth-first search (BFS) algorithm, which we found a
 ## **Algorithm Description Overview**
 
 						  
-	The function receives a RoadMap, and the two cities the user wishes to know the shortest path between, which will be presented in the output as a list of paths (as there might exist more than one possible result).  
-	Firstly, if the two cities in the input are the same, the function returns only one path, with the single city. If they are different, we start a BFS with the starting city that adds a new “step” in each existing path, without ever repeating cities in a path (loops would just add to the total distance of the path, without achieving anything). After extending all the existing paths, we separate them into two lists: allValidPaths and remainingPaths.  
+The function receives a RoadMap, and the two cities the user wishes to know the shortest path between, which will be presented in the output as a list of paths (as there might exist more than one possible result).  
+Firstly, if the two cities in the input are the same, the function returns only one path, with the single city. If they are different, we start a BFS with the starting city that adds a new “step” in each existing path, without ever repeating cities in a path (loops would just add to the total distance of the path, without achieving anything). After extending all the existing paths, we separate them into two lists: allValidPaths and remainingPaths.  
 A path is transferred to allValidPaths if it already reaches the final destination, otherwise it is kept in the remainingPaths. If there are no more paths in remainingPaths, we check allValidPaths and return the shortest path(s), otherwise we extend remainingPaths again in a new iteration.
 
 ## **Data Structures** 
